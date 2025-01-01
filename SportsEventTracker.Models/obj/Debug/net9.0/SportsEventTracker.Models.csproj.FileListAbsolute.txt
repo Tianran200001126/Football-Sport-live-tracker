@@ -1,0 +1,11 @@
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\bin\Debug\net9.0\SportsEventTracker.Models.deps.json
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\bin\Debug\net9.0\SportsEventTracker.Models.dll
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\bin\Debug\net9.0\SportsEventTracker.Models.pdb
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.AssemblyInfoInputs.cache
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.AssemblyInfo.cs
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.csproj.CoreCompileInputs.cache
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.dll
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\refint\SportsEventTracker.Models.dll
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.pdb
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\ref\SportsEventTracker.Models.dll
