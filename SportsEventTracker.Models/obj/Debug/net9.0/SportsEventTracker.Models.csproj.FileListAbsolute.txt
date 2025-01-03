@@ -9,3 +9,4 @@ C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventT
 C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\refint\SportsEventTracker.Models.dll
 C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.pdb
 C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\ref\SportsEventTracker.Models.dll
+C:\Users\jenni_r15fdzi\SportTrackerLive\Football-Sport-live-tracker\SportsEventTracker.Models\obj\Debug\net9.0\SportsEventTracker.Models.sourcelink.json

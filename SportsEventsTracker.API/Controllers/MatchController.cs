@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SportsEventsTracker.API.Services;
 using SportsEventsTracker.DTO;
 using SportsEventTracker.API.Data;
 using SportsEventTracker.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace SportsEventTracker.API.Controllers
 {
@@ -16,9 +14,12 @@ namespace SportsEventTracker.API.Controllers
     {
         private readonly SportsEventTrackerContext _context;
 
-        public MatchesController(SportsEventTrackerContext context)
+        private readonly KafkaProducer<UpdateScoreDto> _kafkaProducer;
+
+        public MatchesController(SportsEventTrackerContext context, KafkaProducer<UpdateScoreDto> kafkaProducer)
         {
             _context = context;
+            _kafkaProducer = kafkaProducer;
         }
 
         /// <summary>
@@ -90,5 +91,42 @@ namespace SportsEventTracker.API.Controllers
 
             return CreatedAtAction(nameof(GetMatches), new { id = match.MatchID }, match);
         }
+
+        [HttpPut("update-score")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UpdateScoreDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateScore([FromBody] UpdateScoreDto updateScoreDto)
+        {
+            if (updateScoreDto?.TeamName == null || updateScoreDto.NewScore < 0)
+            {
+                return BadRequest("Invalid input data.");
+            }
+
+            var match = await _context.Matches.FirstOrDefaultAsync(m => m.MatchID == updateScoreDto.MatchID)
+                        ?? throw new KeyNotFoundException($"Match with ID {updateScoreDto.MatchID} not found.");
+
+            if (match.TeamAName == updateScoreDto.TeamName)
+            {
+                match.ScoreA = updateScoreDto.NewScore;
+            }
+            else if (match.TeamBName == updateScoreDto.TeamName)
+            {
+                match.ScoreB = updateScoreDto.NewScore;
+            }
+            else
+            {
+                return NotFound($"Team '{updateScoreDto.TeamName}' is not part of the match.");
+            }
+
+            await _context.SaveChangesAsync();
+
+      
+
+            await _kafkaProducer.ProduceAsync("update-score",updateScoreDto.MatchID.ToString(),updateScoreDto);
+
+            return Ok(updateScoreDto);
+        }
+    
     }
 }

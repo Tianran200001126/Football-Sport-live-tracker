@@ -20,5 +20,22 @@ namespace SportsEventsTracker.DTO
         public int ScoreA { get; set; }
         public int ScoreB { get; set; }
     }
+     public class UpdateScoreDto
+    {
+        /// <summary>
+        /// The unique ID of the match.
+        /// </summary>
+        public Guid MatchID { get; set; }
+
+        /// <summary>
+        /// The name of the team whose score is to be updated.
+        /// </summary>
+        public string TeamName { get; set; }
+
+        /// <summary>
+        /// The new score to be assigned to the specified team.
+        /// </summary>
+        public int NewScore { get; set; }
+    }
 
 }

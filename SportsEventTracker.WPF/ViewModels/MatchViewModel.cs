@@ -1,39 +1,95 @@
-
 using System.Collections.ObjectModel;
+using System.Windows;
 using SportsEventTracker.Models;
+using SportsEventTracker.Services;
 using SportsEventTracker.WPF.Services;
-
 namespace SportsEventTracker.WPF.ViewModels
 {
-    public class MatchViewModel
+    public class MatchViewModel : ViewModelBase, IDisposable
     {
         private readonly ApiService _apiService;
+        private readonly KafkaConsumerService _kafkaConsumerService;
+        private CancellationTokenSource _cancellationTokenSource;
 
-        public ObservableCollection<GameMatch> Matches { get; set; }
+        private ObservableCollection<GameMatch> _matches;
+
+        public ObservableCollection<GameMatch> Matches
+        {
+            get => _matches;
+            set
+            {
+                _matches = value;
+                OnPropertyChanged(nameof(Matches));
+            }
+        }
 
         public MatchViewModel()
         {
             _apiService = new ApiService();
             Matches = new ObservableCollection<GameMatch>();
-            LoadMatches();
+            _kafkaConsumerService = new KafkaConsumerService("localhost:9092", "update-score");
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            InitializeAsync();
         }
 
-        private async void LoadMatches()
+        private async void InitializeAsync()
+        {
+            try
+            {
+                await LoadMatchesAsync();
+                StartKafkaConsumer();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Initialization failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task LoadMatchesAsync()
         {
             try
             {
                 Matches.Clear();
                 var fetchedMatches = await _apiService.GetMatchesAsync();
-                foreach (var match in fetchedMatches)
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Matches.Add(match);
-                }
+                    foreach (var match in fetchedMatches)
+                    {
+                        Matches.Add(match);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                // Handle errors, e.g., show a message to the user
-                System.Windows.MessageBox.Show($"Failed to load matches: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                MessageBox.Show($"Failed to load matches: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void StartKafkaConsumer()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _kafkaConsumerService.StartConsumingAsync(Matches, _cancellationTokenSource.Token);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Kafka consumer error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
+        }
+
+        public void StopKafkaConsumer()
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
         }
     }
 }

@@ -1,5 +1,3 @@
-using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using SportsEventTracker.Models;
 

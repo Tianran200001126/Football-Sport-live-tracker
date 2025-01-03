@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SportsEventsTracker.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0e2c1f970307cd81635d5abe24f7fbec1fb5046d")]
 [assembly: System.Reflection.AssemblyProductAttribute("SportsEventsTracker.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SportsEventsTracker.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

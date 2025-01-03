@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SportsEventTracker.API.Data;
+using SportsEventsTracker.API.Services;
+using SportsEventsTracker.DTO;
 
 namespace SportsEventTracker.API
 {
@@ -12,6 +14,10 @@ namespace SportsEventTracker.API
             // Add services to the container
             builder.Services.AddDbContext<SportsEventTrackerContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Kafka producer registration
+        var kafkaBootstrapServers = builder.Configuration.GetValue<string>("Kafka:BootstrapServers");
+        builder.Services.AddSingleton(new KafkaProducer<UpdateScoreDto>(kafkaBootstrapServers));    
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

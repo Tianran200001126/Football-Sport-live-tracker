@@ -36,29 +36,50 @@ namespace SportsEventTracker.API.Controllers
             return Ok(teams);
         }
 
-public async Task<IActionResult> CreateTeam([FromBody] TeamDto teamDto)
-{
-    if (!ModelState.IsValid)
-    {
-        return BadRequest(ModelState);
-    }
 
-    var existingTeam = await _context.Teams.FindAsync(teamDto.TeamName);
-    if (existingTeam != null)
-    {
-        return BadRequest($"A team with the name '{teamDto.TeamName}' already exists.");
-    }
+        /// <summary>
+        /// Creates a new team.
+        /// </summary>
+        /// <param name="teamDto">The team data transfer object containing the name of the team to be created.</param>
+        /// <returns>The created team object or an error if the team already exists.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/Team
+        ///     {
+        ///        "teamName": "Arsenal"
+        ///     }
+        /// 
+        /// </remarks>
+        /// <response code="201">Returns the newly created team</response>
+        /// <response code="400">If the team already exists or the model is invalid</response>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Team))] // 201 Created
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // 400 Bad Request
+        public async Task<IActionResult> CreateTeam([FromBody] TeamDto teamDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-    var team = new Team
-    {
-        TeamName = teamDto.TeamName
-    };
+            var existingTeam = await _context.Teams.FindAsync(teamDto.TeamName);
+            if (existingTeam != null)
+            {
+                return BadRequest($"A team with the name '{teamDto.TeamName}' already exists.");
+            }
 
-    _context.Teams.Add(team);
-    await _context.SaveChangesAsync();
+            var team = new Team
+            {
+                TeamName = teamDto.TeamName
+            };
 
-    return CreatedAtAction(nameof(GetTeams), new { teamName = team.TeamName }, team);
-}
+            _context.Teams.Add(team);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetTeams), new { teamName = team.TeamName }, team);
+        }
+    
 
     }
 }
