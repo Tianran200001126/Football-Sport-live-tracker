@@ -1,10 +1,12 @@
 using System;
+using System.ComponentModel;
 
-using System.Text.Json.Serialization;
 namespace SportsEventTracker.Models
 {
-    public class GameMatch
+    public class GameMatch :INotifyPropertyChanged
     {
+        private int _scoreA;
+        private int _scoreB;
         public Guid MatchID { get; set; } // Primary key
         public DateTime MatchDate { get; set; } // Date of the match
 
@@ -16,8 +18,38 @@ namespace SportsEventTracker.Models
 
         public Team TeamB { get; set; } // Team B details
 
-        // Scores
-        public int ScoreA { get; set; } // Score for Team A
-        public int ScoreB { get; set; } // Score for Team B
+            
+        public int ScoreA
+        {
+            get => _scoreA;
+            set
+            {
+                if (_scoreA != value)
+                {
+                    _scoreA = value;
+                    OnPropertyChanged(nameof(ScoreA));
+                }
+            }
+        }
+
+
+        public int ScoreB
+        {
+            get => _scoreB;
+            set
+            {
+                if (_scoreB != value)
+                {
+                    _scoreB = value;
+                    OnPropertyChanged(nameof(ScoreB));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

@@ -5,7 +5,7 @@ using SportsEventTracker.Services;
 using SportsEventTracker.WPF.Services;
 namespace SportsEventTracker.WPF.ViewModels
 {
-    public class MatchViewModel : ViewModelBase, IDisposable
+    public class MatchViewModel : ViewModelBase
     {
         private readonly ApiService _apiService;
         private readonly KafkaConsumerService _kafkaConsumerService;
@@ -27,7 +27,7 @@ namespace SportsEventTracker.WPF.ViewModels
         {
             _apiService = new ApiService();
             Matches = new ObservableCollection<GameMatch>();
-            _kafkaConsumerService = new KafkaConsumerService("localhost:9092", "update-score");
+            _kafkaConsumerService = KafkaConsumerService.GetInstance("localhost:9092", "update-score");
             _cancellationTokenSource = new CancellationTokenSource();
 
             InitializeAsync();
@@ -37,8 +37,9 @@ namespace SportsEventTracker.WPF.ViewModels
         {
             try
             {
-                await LoadMatchesAsync();
                 StartKafkaConsumer();
+                await LoadMatchesAsync();
+                
             }
             catch (Exception ex)
             {
@@ -81,15 +82,5 @@ namespace SportsEventTracker.WPF.ViewModels
             });
         }
 
-        public void StopKafkaConsumer()
-        {
-            _cancellationTokenSource.Cancel();
-        }
-
-        public void Dispose()
-        {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-        }
     }
 }

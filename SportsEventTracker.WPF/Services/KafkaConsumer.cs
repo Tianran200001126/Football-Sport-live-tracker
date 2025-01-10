@@ -7,86 +7,83 @@ using SportsEventsTracker.DTO;
 
 namespace SportsEventTracker.Services
 {
-    public class KafkaConsumerService
+  public class KafkaConsumerService
+{
+    private static KafkaConsumerService _instance;
+    private static readonly object _lock = new();
+
+    private readonly string _bootstrapServers;
+    private readonly string _topic;
+    private IConsumer<Ignore, string> _consumer;
+
+    private KafkaConsumerService(string bootstrapServers, string topic)
     {
-        private readonly string _bootstrapServers;
-        private readonly string _topic;
+        _bootstrapServers = bootstrapServers;
+        _topic = topic;
 
-        public KafkaConsumerService(string bootstrapServers, string topic)
+        var config = new ConsumerConfig
         {
-            _bootstrapServers = bootstrapServers;
-            _topic = topic;
+            BootstrapServers = _bootstrapServers,
+            GroupId = "wpf-consumer-group",
+            AutoOffsetReset = AutoOffsetReset.Latest
+        };
+
+        _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
+    }
+
+    public static KafkaConsumerService GetInstance(string bootstrapServers, string topic)
+    {
+        lock (_lock)
+        {
+            return _instance ??= new KafkaConsumerService(bootstrapServers, topic);
         }
+    }
 
-        public async Task StartConsumingAsync(ObservableCollection<GameMatch> matches, CancellationToken cancellationToken)
+    public async Task StartConsumingAsync(ObservableCollection<GameMatch> matches, CancellationToken cancellationToken)
+    {
+        try
         {
-            var config = new ConsumerConfig
+            _consumer.Subscribe(_topic);
+
+            while (!cancellationToken.IsCancellationRequested)
             {
-                BootstrapServers = _bootstrapServers,
-                GroupId = "wpf-consumer-group",
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-            };
-
-            LogInfo("Waiting for messages...");
-
-            using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
-            consumer.Subscribe(_topic);
-
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
+                var result = _consumer.Consume(cancellationToken);
+                if (result?.Message?.Value != null)
                 {
-                    LogInfo("Start consuming messages...");
-                    var result = consumer.Consume(cancellationToken);
-                    if (result != null)
-                    {
-                        try
-                        {
-                            var updateScore = JsonSerializer.Deserialize<UpdateScoreDto>(result.Message.Value);
-                            UpdateUI(matches, updateScore);
-                        }
-                        catch (JsonException ex)
-                        {
-                            LogError($"Failed to deserialize message: {ex.Message}");
-                        }
-                    }
+                    var update = JsonSerializer.Deserialize<UpdateScoreDto>(result.Message.Value);
+                    UpdateUI(matches, update);
                 }
             }
-            catch (OperationCanceledException)
-            {
-                LogInfo("Consumer stopped gracefully.");
-            }
-            catch (Exception ex)
-            {
-                LogError($"Unexpected error: {ex.Message}");
-            }
-            finally
-            {
-                consumer.Close();
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Graceful shutdown
+        }
+        finally
+        {
+            _consumer.Close();
+        }
+    }
+
+
+     private void LogInfo(string message)
+        {
+            Console.WriteLine($"INFO: {message}");
         }
 
+  
 private void UpdateUI(ObservableCollection<GameMatch> matches, UpdateScoreDto updateScore)
 {
-    // Ensure thread-safe operation
-    Application.Current.Dispatcher.Invoke(() =>
+    Application.Current.Dispatcher.BeginInvoke(() =>
     {
-        // Find the index of the match to be updated
-        var index = matches.IndexOf(matches.FirstOrDefault(m => m.MatchID == updateScore.MatchID));
-        
-        if (index >= 0)
+        var match = matches.FirstOrDefault(m => m.MatchID == updateScore.MatchID);
+        if (match != null)
         {
-            LogInfo($"Replacing match for: {matches[index].TeamAName} vs {matches[index].TeamBName} score {updateScore.NewScore}");
-            
-            // Replace the existing match with an updated one
-            matches[index] = new GameMatch
-            {
-                MatchID = matches[index].MatchID,
-                TeamAName = matches[index].TeamAName,
-                TeamBName = matches[index].TeamBName,
-                ScoreA = updateScore.TeamName == matches[index].TeamAName ? updateScore.NewScore : matches[index].ScoreA,
-                ScoreB = updateScore.TeamName == matches[index].TeamBName ? updateScore.NewScore : matches[index].ScoreB
-            };
+            LogInfo($"Updating match for: {match.TeamAName} vs {match.TeamBName} with new score {updateScore.NewScore}");
+            if (updateScore.TeamName == match.TeamAName)
+                match.ScoreA = updateScore.NewScore;
+            else if (updateScore.TeamName == match.TeamBName)
+                match.ScoreB = updateScore.NewScore;
         }
         else
         {
@@ -95,15 +92,6 @@ private void UpdateUI(ObservableCollection<GameMatch> matches, UpdateScoreDto up
     });
 }
 
-
-        private void LogInfo(string message)
-        {
-            Console.WriteLine($"INFO: {message}");
-        }
-
-        private void LogError(string message)
-        {
-            Console.WriteLine($"ERROR: {message}");
-        }
-    }
 }
+}
+
